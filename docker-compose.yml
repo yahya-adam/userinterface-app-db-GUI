@@ -1,0 +1,43 @@
+
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: university
+    networks:
+      - app_network
+    ports:
+      - "3307:3306"
+    command: 
+      - --bind-address=0.0.0.0
+      - --skip-name-resolve
+      - --default-authentication-plugin=mysql_native_password
+    volumes: 
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql 
+      - mysql_data:/var/lib/mysql
+
+  app:
+    image: yahya1990/userinterface:latest
+    depends_on:
+      - db
+    networks:
+      - app_network
+    environment:  
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: rootpass
+      DB_NAME: university
+      DISPLAY: ${DISPLAY}
+      XAUTHORITY: ~/.Xauthority
+    volumes: 
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ~/.Xauthority:/home/root/.Xauthority
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
